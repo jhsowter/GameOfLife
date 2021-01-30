@@ -1,26 +1,31 @@
 module Lib
     ( 
-        Game (..),
         Cell (..),
-        Neighborhood (..),
-        tick
+        Neighbourhood (..),
+        tick, gridOf
     ) where
 
 import Data.HashMap.Strict (HashMap)
-import qualified Data.Hashmap.Strict as H
+import qualified Data.HashMap.Strict as H
 
-data Game = Game [Cell] deriving Show
+data Cell = Dead Int Int | Live Int Int deriving (Show, Eq)
 
-data Cell = Dead | Alive deriving (Show, Eq)
+data Neighbourhood = Neighbourhood Cell [Cell] deriving Show
 
-data Neighborhood = Neighborhood Cell [Cell] deriving Show
-
-tick :: Neighborhood -> Neighborhood
-tick (Neighborhood cell neighbours) = Neighborhood deadOrAlive neighbours
+tick :: Neighbourhood -> Neighbourhood
+tick (Neighbourhood cell neighbours) = Neighbourhood deadOrLive neighbours
     where 
-        liveNeighbours = filter (==Alive) neighbours
-        aliveCount = length liveNeighbours
-        deadOrAlive = case cell of 
-            Alive -> if aliveCount == 2 || aliveCount == 3 then Alive else Dead
-            Dead -> if aliveCount == 3 then Alive else Dead
+        liveNeighbours = filter isLive neighbours
+        liveCount = length liveNeighbours
+        deadOrLive = case cell of 
+            (Live x y) -> if liveCount == 2 || liveCount == 3 then Live x y else Dead x y
+            (Dead x y) -> if liveCount == 3 then Live x y else Dead x y
 
+        isLive (Live _ _) = True
+        isLive (Dead _ _) = False
+
+gridOf :: Int -> Int -> [[Cell]]
+gridOf = undefined
+-- gridOf x y = 
+--     where
+--         g = take y $ repeat (take x $ repeat $ H.singleton Dead)
