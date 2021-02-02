@@ -2,12 +2,26 @@ module Lib
     ( 
         Cell (..),
         Neighbourhood (..),
-        tick, gridOf, drawGrid, cellsToHashMap
+        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game
     ) where
 
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 import Control.Monad (forM_)
+import Data.Maybe (catMaybes)
+
+game :: Int -> IO ()
+game n = drawGrid $ loop n
+
+loop n = last $ take n $ ticker initial
+    where
+        ticker grid = grid : ticker next
+            where
+                next = tickGrid grid
+        initial = setLive 9 11 $ setLive 10 10 $ setLive 10 11 $setLive 11 11 $ setLive 11 12 $ setLive 12 12 $ gridOf 20 20
+
+
+type Grid = HashMap (Int, Int) Cell
 
 data Cell = Dead Int Int | Live Int Int deriving (Show, Eq)
 
@@ -16,6 +30,9 @@ isLive (Live _ _) = True
 isLive (Dead _ _) = False
 
 data Neighbourhood = Neighbourhood Cell [Cell] deriving Show
+
+cellIn :: Neighbourhood -> Cell
+cellIn (Neighbourhood cell neighbours) = cell
 
 liveNeighbours :: Neighbourhood -> [Cell]
 liveNeighbours (Neighbourhood cell neighbours) = filter isLive neighbours
@@ -54,4 +71,17 @@ drawGrid cells = do
         top = minimum ys
         bottom = maximum ys
 
-tickGrid 
+tickGrid :: Grid -> Grid
+tickGrid grid = H.map nextCell grid
+    where
+        nextCell cell@(Live x y) = cellIn $ tick $ Neighbourhood cell (neighboursFor (x,y) grid)
+        nextCell cell@(Dead x y) = cellIn $ tick $ Neighbourhood cell (neighboursFor (x,y) grid)
+
+setLive :: Int -> Int -> Grid -> Grid
+setLive x y grid = H.insert (x,y) (Live x y) grid
+
+neighboursFor :: (Int, Int) -> Grid -> [Cell]
+neighboursFor (x,y) grid = catMaybes cells
+    where
+        cells :: [Maybe Cell]
+        cells = [(H.lookup (x,y) grid) | x <- [x-1, 1, x+1], y <- [y-1, y, y+1]]
