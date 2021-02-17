@@ -25,7 +25,10 @@ appLoop renderer = do
             keysymKeycode (keyboardEventKeysym keyboardEvent) == KeycodeQ
           _ -> False
       qPressed = any eventIsQPress events
+
+  let quit = elem SDL.QuitEvent $ map SDL.eventPayload events
+
   rendererDrawColor renderer $= V4 0 0 255 255
   clear renderer
   present renderer
-  unless qPressed (appLoop renderer)
+  unless quit (appLoop renderer)
