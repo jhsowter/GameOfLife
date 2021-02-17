@@ -21,10 +21,12 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- unordered-containers
 
 library:
   source-dirs: src
+  dependencies:
+  - unordered-containers
+  - sdl2
 
 executables:
   helloworld-exe:
@@ -36,6 +38,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - helloworld
+    - sdl2
+    - linear
 
 tests:
   helloworld-test:

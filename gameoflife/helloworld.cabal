@@ -32,6 +32,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , sdl2
     , unordered-containers
   default-language: Haskell2010
 
@@ -45,7 +46,8 @@ executable helloworld-exe
   build-depends:
       base >=4.7 && <5
     , helloworld
-    , unordered-containers
+    , linear
+    , sdl2
   default-language: Haskell2010
 
 test-suite helloworld-test
@@ -59,5 +61,4 @@ test-suite helloworld-test
   build-depends:
       base >=4.7 && <5
     , helloworld
-    , unordered-containers
   default-language: Haskell2010

@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Lib
     ( 
         Cell (..),
@@ -9,6 +10,8 @@ import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 import Control.Monad (forM_)
 import Data.Maybe (catMaybes)
+import SDL (Event, Point (P), V2 (V2), ($=))
+import qualified SDL
 
 game :: Int -> IO ()
 game n = drawGrid $ loop n
