@@ -4,9 +4,9 @@ module Lib
         Cell (..),
         Grid (..),
         Neighbourhood (..),
-        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game, tickN
+        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game, tickN, neighboursFor
     ) where
-
+import Data.List (filter)
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 import Control.Monad (forM_)

@@ -50,10 +50,9 @@ appLoop renderer = do
       clear renderer
 
       -- draw grid
-
       now <- SDL.time
-      putStr $ show now
       drawGridr renderer $ grid
+      drawGrid grid
       present renderer
 
       -- next
