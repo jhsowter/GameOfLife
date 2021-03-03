@@ -4,7 +4,7 @@ module Lib
         Cell (..),
         Grid (..),
         Neighbourhood (..),
-        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game, tickN, neighboursFor
+        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game, tickN, neighboursFor, setLiveN
     ) where
 import Data.List (filter)
 import Data.HashMap.Strict (HashMap)
@@ -14,16 +14,17 @@ import Data.Maybe (catMaybes)
 import SDL (Event, Point (P), V2 (V2), ($=))
 import qualified SDL
 
-game :: (Int, Int) -> Int -> IO ()
-game size n = drawGrid $ tickN size n
+game :: Int -> IO ()
+game n = drawGrid $ tickN n initial
+    where 
+        initial = setLive 2 2 $ setLive 2 1 $ setLive 2 3 $ gridOf 4 4
 
-tickN :: (Int, Int) -> Int -> Grid
-tickN (width, height) n = last $ take n $ ticker initial
+tickN :: Int -> Grid -> Grid
+tickN n initial = last $ take n $ ticker initial
     where
         ticker grid = grid : ticker next
             where
                 next = tickGrid grid
-        initial = gridOf width height
 
 
 type Grid = HashMap (Int, Int) Cell
@@ -85,8 +86,15 @@ tickGrid grid = H.map nextCell grid
 setLive :: Int -> Int -> Grid -> Grid
 setLive x y = H.insert (x,y) (Live x y)
 
+setLiveN :: [(Int, Int)] -> Grid -> Grid
+setLiveN cs grid = foldr (\(x,y) g -> setLive x y g) grid cs
+
 neighboursFor :: (Int, Int) -> Grid -> [Cell]
-neighboursFor (x,y) grid = catMaybes cells
+neighboursFor (x,y) grid =  cells
     where
-        cells :: [Maybe Cell]
-        cells = [H.lookup (x,y) grid | x <- [x-1, 1, x+1], y <- [y-1, y, y+1]]
+        cells :: [Cell]
+        cells = filter (not . eqls) c
+        c = catMaybes [H.lookup (x',y') grid | x' <- [x-1, x, x+1], y' <- [y-1, y, y+1]]
+        eqls :: Cell -> Bool
+        eqls cell@(Live x' y') = x' == x && y' == y
+        eqls cell@(Dead x' y') = x' == x && y' == y

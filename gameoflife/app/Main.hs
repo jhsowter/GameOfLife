@@ -27,11 +27,18 @@ main = do
 
     return ()
 
+blinker :: Int -> Int -> Grid -> Grid
+blinker x y = setLiveN [(x,y), (x, y+1), (x, y+2)]
+
+glider :: Int -> Int -> Grid -> Grid
+glider x y = setLiveN [(x, y), (x+2, y), (x+1, y+1), (x+2, y+1), (x+1, y+2)]
+
 appLoop :: Renderer -> IO ()
 appLoop renderer = do
   now <- SDL.time
-  let g = setLive 25 25 $ setLive 25 26 $ setLive 25 27 $ gridOf (width `div` cellSize) (height `div` cellSize)
-  innerLoop renderer now 0 g
+  -- let g = setLive 25 25 $ setLive 25 26 $ setLive 25 27 $ gridOf (width `div` cellSize) (height `div` cellSize)
+  let initialGrid = blinker 25 25 $ gridOf (width `div` cellSize) (height `div` cellSize)
+  innerLoop renderer now 0 initialGrid
   where
     innerLoop :: Renderer -> Double -> Int -> Grid -> IO ()
     innerLoop renderer startTime ticks grid = do
