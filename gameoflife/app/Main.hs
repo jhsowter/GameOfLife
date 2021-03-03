@@ -5,6 +5,7 @@ import Lib
 import SDL
 import Linear (V4(..))
 import Control.Monad (unless, forM_)
+import Control.Concurrent
 import Data.HashMap.Strict (HashMap)
 import qualified Data.HashMap.Strict as H
 
@@ -22,40 +23,46 @@ main = do
     }
     renderer <- createRenderer window (-1) defaultRenderer
     
-    let g = setLive 25 25 $ setLive 25 26 $ setLive 25 27 $ gridOf (width `div` cellSize) (height `div` cellSize)
-    appLoop renderer g
+    appLoop renderer
 
     return ()
 
-appLoop :: Renderer -> Grid -> IO ()
-appLoop renderer grid = do
-  events <- pollEvents
-  let eventIsQPress event =
-        case eventPayload event of
-          KeyboardEvent keyboardEvent ->
-            keyboardEventKeyMotion keyboardEvent == Pressed &&
-            keysymKeycode (keyboardEventKeysym keyboardEvent) == KeycodeQ
-          _ -> False
-      qPressed = any eventIsQPress events
+appLoop :: Renderer -> IO ()
+appLoop renderer = do
+  now <- SDL.time
+  let g = setLive 25 25 $ setLive 25 26 $ setLive 25 27 $ gridOf (width `div` cellSize) (height `div` cellSize)
+  innerLoop renderer now 0 g
+  where
+    innerLoop :: Renderer -> Double -> Int -> Grid -> IO ()
+    innerLoop renderer startTime ticks grid = do
+      events <- pollEvents
+      let eventIsQPress event =
+            case eventPayload event of
+              KeyboardEvent keyboardEvent ->
+                keyboardEventKeyMotion keyboardEvent == Pressed &&
+                keysymKeycode (keyboardEventKeysym keyboardEvent) == KeycodeQ
+              _ -> False
+          qPressed = any eventIsQPress events
+      let quit = elem SDL.QuitEvent $ map SDL.eventPayload events
 
-  let quit = elem SDL.QuitEvent $ map SDL.eventPayload events
+      rendererDrawColor renderer $= V4 0 0 0 255
 
-  rendererDrawColor renderer $= V4 0 0 0 255
+      clear renderer
 
-  clear renderer
-  -- let init = tickN ((width `div` cellSize), (height `div` cellSize)) tick
-  drawGrid grid
-  drawGridr renderer $ grid
-  -- drawCell renderer (10, 10) 10 White
-  -- rendererDrawColor renderer $= V4 255 255 255 255
-  -- let list = [(0, 0), (10, 10), (0, 10), (10, 0)]
-  -- forM_ list $ \(x,y) ->
-  --     fillRect renderer $ Just $ Rectangle (P (V2 x y)) (V2 (x+10) (y+10))
-  -- let rect = Rectangle (P (V2 10 10)) (V2 20 20)
-  -- fillRect renderer $ Just rect
+      -- draw grid
 
-  present renderer
-  unless quit (appLoop renderer (tickGrid grid))
+      now <- SDL.time
+      putStr $ show now
+      drawGridr renderer $ grid
+      present renderer
+
+      -- next
+      let oneSecond = startTime + (fromIntegral 1)
+      if(oneSecond > now)
+        then
+          unless quit (innerLoop renderer startTime (ticks) grid)
+        else
+          unless quit (innerLoop renderer oneSecond (ticks + 1) $ tickGrid grid)
 
 drawCell :: Renderer -> (Int, Int) -> Int -> Colour -> IO ()
 drawCell renderer (x, y) size colour = do
