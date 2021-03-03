@@ -48,6 +48,7 @@ executable helloworld-exe
     , helloworld
     , linear
     , sdl2
+    , unordered-containers
   default-language: Haskell2010
 
 test-suite helloworld-test

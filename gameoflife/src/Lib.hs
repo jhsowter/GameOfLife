@@ -2,8 +2,9 @@
 module Lib
     ( 
         Cell (..),
+        Grid (..),
         Neighbourhood (..),
-        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game
+        tick, gridOf, drawGrid, cellsToHashMap, tickGrid, setLive, game, tickN
     ) where
 
 import Data.HashMap.Strict (HashMap)
@@ -13,15 +14,16 @@ import Data.Maybe (catMaybes)
 import SDL (Event, Point (P), V2 (V2), ($=))
 import qualified SDL
 
-game :: Int -> IO ()
-game n = drawGrid $ loop n
+game :: (Int, Int) -> Int -> IO ()
+game size n = drawGrid $ tickN size n
 
-loop n = last $ take n $ ticker initial
+tickN :: (Int, Int) -> Int -> Grid
+tickN (width, height) n = last $ take n $ ticker initial
     where
         ticker grid = grid : ticker next
             where
                 next = tickGrid grid
-        initial = setLive 9 11 $ setLive 10 10 $ setLive 10 11 $setLive 11 11 $ setLive 11 12 $ setLive 12 12 $ gridOf 20 20
+        initial = gridOf width height
 
 
 type Grid = HashMap (Int, Int) Cell
@@ -52,7 +54,7 @@ gridOf :: Int -> Int -> HashMap (Int, Int) Cell
 gridOf rows columns = cellsToHashMap $ [(Dead x y) | x <- [0..rows], y <- [0..columns]]
 
 cellsToHashMap :: [Cell] -> HashMap (Int, Int) Cell
-cellsToHashMap cells = foldr insertCell H.empty cells
+cellsToHashMap = foldr insertCell H.empty
     where
         insertCell cell@(Live x y) = H.insert (x,y) cell
         insertCell cell@(Dead x y) = H.insert (x,y) cell
@@ -81,10 +83,10 @@ tickGrid grid = H.map nextCell grid
         nextCell cell@(Dead x y) = cellIn $ tick $ Neighbourhood cell (neighboursFor (x,y) grid)
 
 setLive :: Int -> Int -> Grid -> Grid
-setLive x y grid = H.insert (x,y) (Live x y) grid
+setLive x y = H.insert (x,y) (Live x y)
 
 neighboursFor :: (Int, Int) -> Grid -> [Cell]
 neighboursFor (x,y) grid = catMaybes cells
     where
         cells :: [Maybe Cell]
-        cells = [(H.lookup (x,y) grid) | x <- [x-1, 1, x+1], y <- [y-1, y, y+1]]
+        cells = [H.lookup (x,y) grid | x <- [x-1, 1, x+1], y <- [y-1, y, y+1]]

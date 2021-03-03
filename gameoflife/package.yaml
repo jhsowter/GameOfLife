@@ -39,6 +39,7 @@ executables:
     dependencies:
     - helloworld
     - sdl2
+    - unordered-containers
     - linear
 
 tests:
