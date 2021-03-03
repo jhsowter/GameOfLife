@@ -87,7 +87,7 @@ setLive :: Int -> Int -> Grid -> Grid
 setLive x y = H.insert (x,y) (Live x y)
 
 setLiveN :: [(Int, Int)] -> Grid -> Grid
-setLiveN cs grid = foldr (\(x,y) g -> setLive x y g) grid cs
+setLiveN cs grid = foldr (uncurry setLive) grid cs
 
 neighboursFor :: (Int, Int) -> Grid -> [Cell]
 neighboursFor (x,y) grid =  cells
