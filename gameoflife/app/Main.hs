@@ -37,7 +37,7 @@ appLoop :: Renderer -> IO ()
 appLoop renderer = do
   now <- SDL.time
   -- let g = setLive 25 25 $ setLive 25 26 $ setLive 25 27 $ gridOf (width `div` cellSize) (height `div` cellSize)
-  let initialGrid = blinker 25 25 $ gridOf (width `div` cellSize) (height `div` cellSize)
+  let initialGrid = glider 25 25 $ gridOf (width `div` cellSize) (height `div` cellSize)
   innerLoop renderer now 0 initialGrid
   where
     innerLoop :: Renderer -> Double -> Int -> Grid -> IO ()
@@ -59,7 +59,7 @@ appLoop renderer = do
       -- draw grid
       now <- SDL.time
       drawGridr renderer $ grid
-      drawGrid grid
+      -- drawGrid grid
       present renderer
 
       -- next
