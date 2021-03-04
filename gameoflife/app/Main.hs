@@ -37,7 +37,7 @@ appLoop :: Renderer -> IO ()
 appLoop renderer = do
   now <- SDL.time
   -- let g = setLive 25 25 $ setLive 25 26 $ setLive 25 27 $ gridOf (width `div` cellSize) (height `div` cellSize)
-  let initialGrid = glider 25 25 $ gridOf (width `div` cellSize) (height `div` cellSize)
+  let initialGrid = glider 50 50 $ blinker 25 25 $ gridOf (width `div` cellSize) (height `div` cellSize)
   innerLoop renderer now 0 initialGrid
   where
     innerLoop :: Renderer -> Double -> Int -> Grid -> IO ()
@@ -87,8 +87,7 @@ drawGridr renderer cells = do
             case H.lookup (x, y) cells of
                 Just (Live x y) -> drawCell renderer (toxy (x, y)) cellSize White
                 Just (Dead x y) -> drawCell renderer (toxy (x, y)) cellSize Black
-                Nothing -> putStr ""
-        putStr "\n"
+                Nothing -> return ()
     where
         xs = map fst (H.keys cells)
         ys = map snd (H.keys cells)
